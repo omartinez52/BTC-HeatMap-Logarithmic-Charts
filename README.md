@@ -1,4 +1,4 @@
-# BTC-HeatMap-Logarithmic-Charts
+# BTC-HeatMap-GoldenRatio-Charts
 #ABOUT:
   - Using BCHAIN API to retrieve historical price data of Bitcoin in USD.
   - Language(s): Written w/ Python and styled with HTML & CSS.
