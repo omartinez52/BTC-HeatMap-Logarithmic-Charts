@@ -26,8 +26,8 @@ import pandas as pd
 import requests
 import json
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output
 import plotly.graph_objs as go
 from pycoingecko import CoinGeckoAPI
@@ -41,7 +41,7 @@ class Bitcoin:
         # monthly data frame used for creating heat map.
         self.HM_monthly_df = ''
         # complete BTC historical daily price data frame.
-        self.complete_df = ''
+        self.complete_df = pd.DataFrame()
         # daily btc chart used for the heat map.
         self.HM_daily_df = ''
         # distance used for color sequence of heatmap.
@@ -64,11 +64,12 @@ class Bitcoin:
             - Refer to Heat Map Solution and Logarithmic Solution.
     """
     def updateDataFrames(self):
-        # Requesting data from API url. Using json to create a dictionary. Creating data frame from dict.
-        self.complete_df = pd.DataFrame(json.loads(requests.get(self.API_url).text))
-        # 3rd index of dataset column contains a nested list with data [[Date1,Val1],[Date2,Val2],...].
-        self.complete_df = pd.DataFrame(self.complete_df.dataset[3],columns=['Date','Value'])
-        # reverse order of complete data from to ascending datetime order.
+        # Requesting data from API url. Using json to create a dictionary.
+        response = requests.get(self.API_url)
+        data = response.json()
+        # Creating data frame from the nested list in the response
+        self.complete_df = pd.DataFrame(data['dataset']['data'], columns=['Date', 'Value'])
+        # reverse order of complete data to ascending datetime order.
         self.complete_df = self.complete_df.iloc[::-1]
         # creating 200WMA column to store data for heat map. Taking 1400 day moving average of data.
         self.complete_df['200WMA'] = self.complete_df['Value'].astype('float').rolling(window=1400).mean()
@@ -98,7 +99,7 @@ class Bitcoin:
         # monthly percent change of the 200WMA used for color sequence of heat map.
         self.HM_distance = self.HM_monthly_df['200WMA'].pct_change() * 100
 
-        # creating golden ration mutipliers
+        # creating golden ratio multipliers
         self.GR_daily_df['1.6GRM'] = self.GR_daily_df['350DMA'].astype('float') * 1.6
         self.GR_daily_df['2GRM'] = self.GR_daily_df['350DMA'].astype('float') * 2.0
         self.GR_daily_df['3GRM'] = self.GR_daily_df['350DMA'].astype('float') * 3.0
